@@ -1,4 +1,7 @@
 #include<iostream>
+#include<vector>
+#include<algorithm>
+
 
 
 class Herbivore {
@@ -55,8 +58,13 @@ protected:
 
 public:
     virtual ~Carnivore() {};
+    int get_power() const;
     virtual std::string Eat(const Herbivore& herbivore) = 0;
  };
+int Carnivore::get_power() const
+{
+    return power;
+}
 
 class Lion : public Carnivore{
 public:
@@ -132,23 +140,75 @@ class AnimalWorld
 
     Continent& factory;
 public:
-    AnimalWorld(Continent& factoryP);
-    void MealsHerbivores(Herbivore* herbivoreP);
-    void NutritionCarnivores(Carnivore* carnivoreP,)
-
+    AnimalWorld(Continent* factoryP);
+    void MealsHerbivores(std::vector<Herbivore*>& herbivoreP);
+    void NutritionCarnivores(std::vector<Carnivore*>& carnivoreP,
+                             std::vector<Herbivore*>& herbivoreP);
 };
-AnimalWorld::AnimalWorld(Continent& factoryP) :factory{ factoryP } {}
+AnimalWorld::AnimalWorld(Continent* factoryP) :factory{ *factoryP } {}
+void AnimalWorld::MealsHerbivores(std::vector<Herbivore*>& herbivoreP)
+{
+    for(auto var : herbivoreP)
+        (*var).EatGrass();
+}
+void AnimalWorld::NutritionCarnivores(std::vector<Carnivore*>& carnivoreP, 
+                                      std::vector<Herbivore*>& herbivoreP)
+{
+    int min1 = carnivoreP.size() < herbivoreP.size() ?
+        carnivoreP.size() : herbivoreP.size();
 
+    for (size_t i = 0; i < min1; i++)
+    {
+        carnivoreP[i]->Eat(*herbivoreP[i]);
+    }  
+}
+
+void show_weights_herb(std::vector<Herbivore*>& herbP) 
+{
+    for (auto var : herbP)
+        std::cout << (*var).get_weight() << " ";
+
+    std::cout << std::endl;
+}
+void show_powers_carn(std::vector<Carnivore*>& carnP)
+{
+    for (auto var : carnP)
+        std::cout << (*var).get_power() << " ";
+
+    std::cout << std::endl;
+}
 
 int main() {
-    //std::cout << "Client: Testing client code with the first factory type:\n";
-    //Africa* f1 = new Africa();
-    //AnimalWorld(*f1);
-    //delete f1;
-    //std::cout << std::endl;
-    //std::cout << "Client: Testing the same client code with the second factory type:\n";
-    //NorthAmerica* f2 = new NorthAmerica();
-    //AnimalWorld(*f2);
-    //delete f2;
+
+    std::cout << "Continent: Africa \n";
+    std::vector<Herbivore*> herb_animals1;
+    Wildebeest w1(50);
+    Wildebeest w2(150);
+    herb_animals1.push_back(&w1);
+    herb_animals1.push_back(&w2);
+
+    std::vector<Carnivore*> carn_animals1;
+    Lion l1(50);
+    Lion l2(200);
+    carn_animals1.push_back(&l1);
+    carn_animals1.push_back(&l2);
+
+    std::cout << "Weights of herbivore animals before eating:" << std::endl;
+    show_weights_herb(herb_animals1);
+
+    std::cout << "Powers of carnivore animals before eating:" << std::endl;
+    show_powers_carn(carn_animals1);
+
+    Africa* afr = new Africa();
+    AnimalWorld* aw = new AnimalWorld(afr);
+    aw->MealsHerbivores(herb_animals1);
+    aw->NutritionCarnivores(carn_animals1, herb_animals1);
+
+    std::cout << "Weights of herbivore animals after eating:" << std::endl;
+    show_weights_herb(herb_animals1);
+
+    std::cout << "Powers of carnivore animals after eating:" << std::endl;
+    show_powers_carn(carn_animals1);
+    
     return 0;
 }
